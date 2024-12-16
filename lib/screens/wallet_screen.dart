@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sage_expense_tracker/widgets/bottom_navigation.dart';
+import 'package:sage_expense_tracker/main.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -10,6 +12,7 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   bool _showTransactions = true;
+  int _selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +159,39 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0097A7),
+              Color(0xFFFFC67D),
+            ],
+          ),
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+            );
+          },
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomNavigation(
+        selectedIndex: _selectedIndex,
+        onIndexChanged: (index) => setState(() => _selectedIndex = index),
       ),
     );
   }

@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:sage_expense_tracker/widgets/bottom_navigation.dart';
+import 'package:sage_expense_tracker/main.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int _selectedIndex = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +123,39 @@ class ProfileScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0097A7),
+              Color(0xFFFFC67D),
+            ],
+          ),
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+            );
+          },
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomNavigation(
+        selectedIndex: _selectedIndex,
+        onIndexChanged: (index) => setState(() => _selectedIndex = index),
       ),
     );
   }
