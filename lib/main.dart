@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:sage_expense_tracker/screens/wallet_screen.dart';
+import 'package:sage_expense_tracker/models/expense.dart';
+import 'package:sage_expense_tracker/screens/profile_screen.dart';
+import 'package:sage_expense_tracker/screens/onboarding_screen.dart';
+import 'package:sage_expense_tracker/screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,12 +20,13 @@ class MyApp extends StatelessWidget {
       title: 'Sage Expense Tracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D9596),
-          // Using a teal-like color as seen in the design
+          seedColor: const Color(0xFF0097A7),
+          primary: const Color(0xFF0097A7),
+          secondary: const Color(0xFFFFC67D),
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
@@ -34,109 +40,106 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  final List<Expense> _mockExpenses = [
+    Expense(
+      name: 'Upwork',
+      amount: 850.00,
+      date: DateTime.now(),
+      userId: 'user_id',
+    ),
+    Expense(
+      name: 'Transfer',
+      amount: -85.00,
+      date: DateTime.now().subtract(const Duration(days: 1)),
+      userId: 'user_id',
+    ),
+    Expense(
+      name: 'Paypal',
+      amount: 1406.00,
+      date: DateTime(2022, 1, 30),
+      userId: 'user_id',
+    ),
+    Expense(
+      name: 'Youtube',
+      amount: -11.99,
+      date: DateTime(2022, 1, 16),
+      userId: 'user_id',
+    ),
+  ];
+
+  double get _totalBalance => _mockExpenses.fold(
+        0,
+        (sum, expense) => sum + expense.amount,
+      );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      body: SafeArea(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0097A7),
+              Color(0xFFFFC67D),
+            ],
+          ),
+        ),
         child: Column(
           children: [
-            // Header Section
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Good afternoon,',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 16,
-                            ),
-                          ),
-                          const Text(
-                            'Enjelin Morgeana',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.notifications_outlined),
-                        color: Colors.white,
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Balance Card
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Total Balance',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.more_horiz),
-                              color: Colors.white,
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
                         const Text(
-                          '\$2,548.00',
+                          'Balance',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 32,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildBalanceItem(
-                              icon: Icons.arrow_downward,
-                              label: 'Income',
-                              amount: '\$1,840.00',
-                            ),
-                            _buildBalanceItem(
-                              icon: Icons.arrow_upward,
-                              label: 'Expenses',
-                              amount: '\$284.00',
-                            ),
-                          ],
+                        IconButton(
+                          icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                          onPressed: () {},
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    Text(
+                      '\$${_totalBalance.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildBalanceItem(
+                          icon: Icons.arrow_downward,
+                          label: 'Income',
+                          amount: '\$2,256.00',
+                        ),
+                        _buildBalanceItem(
+                          icon: Icons.arrow_upward,
+                          label: 'Expenses',
+                          amount: '\$96.99',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            // Transactions Section
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -144,27 +147,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
-                child: Column(
-                  children: [
-                    // Transactions Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Transactions History',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                child: ListView.builder(
+                  itemCount: _mockExpenses.length,
+                  itemBuilder: (context, index) {
+                    final expense = _mockExpenses[index];
+                    return ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text('See all'),
+                        child: Icon(
+                          expense.amount > 0 ? Icons.arrow_downward : Icons.arrow_upward,
+                          color: expense.amount > 0 ? Colors.green : Colors.red,
                         ),
-                      ],
-                    ),
-                    // Add transaction list items here
-                  ],
+                      ),
+                      title: Text(expense.name),
+                      subtitle: Text(DateFormat('MMM dd, yyyy').format(expense.date)),
+                      trailing: Text(
+                        '${expense.amount > 0 ? '+' : ''}\$${expense.amount.abs().toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: expense.amount > 0 ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -235,7 +244,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     final isSelected = _selectedIndex == index;
     return InkWell(
-      onTap: () => setState(() => _selectedIndex = index),
+      onTap: () {
+        setState(() => _selectedIndex = index);
+        if (index == 2) { // Wallet index
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const WalletScreen()),
+          );
+        } else if (index == 3) { // Profile index
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        }
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -310,7 +332,7 @@ class AddExpenseScreen extends StatefulWidget {
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  String _selectedCategory = 'Netflix';
+  String _selectedCategory = 'Youtube';
 
   @override
   void dispose() {
@@ -522,5 +544,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         ],
       ),
     );
+  }
+
+  void _handleAddExpense() {
+    if (_amountController.text.isNotEmpty) {
+      // TODO: Implement expense addition with MongoDB later
+      Navigator.pop(context);
+    }
   }
 }
