@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sage_expense_tracker/widgets/bottom_navigation.dart';
 import 'package:sage_expense_tracker/main.dart';
+import 'package:sage_expense_tracker/widgets/circle_reveal_clipper.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -174,9 +175,53 @@ class _WalletScreenState extends State<WalletScreen> {
         ),
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return Material(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                      ),
+                      child: const AddExpenseScreen(),
+                    ),
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  final screenSize = MediaQuery.of(context).size;
+                  final fabPosition = MediaQuery.of(context).size.height - 80;
+                  
+                  return Stack(
+                    children: [
+                      child,
+                      AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          return ClipPath(
+                            clipper: CircleRevealClipper(
+                              center: Offset(
+                                screenSize.width / 2,
+                                fabPosition,
+                              ),
+                              radius: animation.value * screenSize.height * 1.5,
+                            ),
+                            child: child,
+                          );
+                        },
+                        child: child,
+                      ),
+                    ],
+                  );
+                },
+              ),
             );
           },
           elevation: 0,

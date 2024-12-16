@@ -6,6 +6,7 @@ import 'package:sage_expense_tracker/models/expense.dart';
 import 'package:sage_expense_tracker/screens/profile_screen.dart';
 import 'package:sage_expense_tracker/screens/onboarding_screen.dart';
 import 'package:sage_expense_tracker/screens/splash_screen.dart';
+import 'package:sage_expense_tracker/widgets/circle_reveal_clipper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -194,9 +195,53 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return Material(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                        ),
+                      ),
+                      child: AddExpenseScreen(),
+                    ),
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  final screenSize = MediaQuery.of(context).size;
+                  final fabPosition = MediaQuery.of(context).size.height - 80;
+                  
+                  return Stack(
+                    children: [
+                      child,
+                      AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          return ClipPath(
+                            clipper: CircleRevealClipper(
+                              center: Offset(
+                                screenSize.width / 2,
+                                fabPosition,
+                              ),
+                              radius: animation.value * screenSize.height * 1.5,
+                            ),
+                            child: child,
+                          );
+                        },
+                        child: child,
+                      ),
+                    ],
+                  );
+                },
+              ),
             );
           },
           elevation: 0,
@@ -376,92 +421,127 @@ class AddExpenseScreen extends StatefulWidget {
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
 }
 
-class _AddExpenseScreenState extends State<AddExpenseScreen> {
+class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Youtube';
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutQuint,
+    );
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Add Expense',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
+    return Material(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
           ),
-        ],
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
         ),
-        child: SingleChildScrollView(
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'NAME',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
+              AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    _animationController.reverse().then((_) {
+                      Navigator.of(context).pop();
+                    });
+                  },
+                ),
+                title: const Text(
+                  'Add Expense',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
-              const SizedBox(height: 8),
-              _buildCategorySelector(),
-              const SizedBox(height: 20),
-              const Text(
-                'AMOUNT',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'NAME',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildCategorySelector(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'AMOUNT',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildAmountField(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'DATE',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildDatePicker(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'INVOICE',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildAddInvoice(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              _buildAmountField(),
-              const SizedBox(height: 20),
-              const Text(
-                'DATE',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildDatePicker(),
-              const SizedBox(height: 20),
-              const Text(
-                'INVOICE',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildAddInvoice(),
             ],
           ),
         ),
