@@ -180,19 +180,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
-          );
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0097A7),
+              Color(0xFFFFC67D),
+            ],
           ),
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+            );
+          },
+          elevation: 0,
+          backgroundColor: Colors.transparent,
           child: const Icon(
             Icons.add,
             color: Colors.white,
@@ -201,82 +209,121 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 6.0,
-        shape: const CircularNotchedRectangle(),
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                icon: Icons.home_outlined,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                icon: Icons.insert_chart_outlined,
-                label: 'Statistics',
-                index: 1,
-              ),
-              const SizedBox(width: 40), // Gap for FAB
-              _buildNavItem(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'Wallet',
-                index: 2,
-              ),
-              _buildNavItem(
-                icon: Icons.person_outline,
-                label: 'Profile',
-                index: 3,
-              ),
-            ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
-    final isSelected = _selectedIndex == index;
-    return InkWell(
-      onTap: () {
-        setState(() => _selectedIndex = index);
-        if (index == 2) { // Wallet index
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const WalletScreen()),
-          );
-        } else if (index == 3) { // Profile index
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfileScreen()),
-          );
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey,
+        child: BottomAppBar(
+          elevation: 0,
+          color: Colors.transparent,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                const SizedBox(width: 24),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedIndex = 0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.home_outlined,
+                          color: _selectedIndex == 0 
+                              ? Theme.of(context).colorScheme.primary 
+                              : Colors.grey,
+                        ),
+                        Text(
+                          'Home',
+                          style: TextStyle(
+                            color: _selectedIndex == 0 
+                                ? Theme.of(context).colorScheme.primary 
+                                : Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 2),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      setState(() => _selectedIndex = 1);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WalletScreen(),
+                        ),
+                      ).then((_) => setState(() => _selectedIndex = 0));
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: _selectedIndex == 1 
+                              ? Theme.of(context).colorScheme.primary 
+                              : Colors.grey,
+                        ),
+                        Text(
+                          'Wallet',
+                          style: TextStyle(
+                            color: _selectedIndex == 1 
+                                ? Theme.of(context).colorScheme.primary 
+                                : Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      setState(() => _selectedIndex = 2);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
+                        ),
+                      ).then((_) => setState(() => _selectedIndex = 0));
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          color: _selectedIndex == 2 
+                              ? Theme.of(context).colorScheme.primary 
+                              : Colors.grey,
+                        ),
+                        Text(
+                          'Profile',
+                          style: TextStyle(
+                            color: _selectedIndex == 2 
+                                ? Theme.of(context).colorScheme.primary 
+                                : Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 24),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
