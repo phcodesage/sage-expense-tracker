@@ -40,13 +40,14 @@ class BottomNavigation extends StatelessWidget {
                   icon: Icons.home_outlined,
                   label: 'Home',
                   onTap: () {
-                    onIndexChanged(0);
                     if (selectedIndex != 0) {
-                      Navigator.pushReplacement(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        (route) => false,
                       );
                     }
+                    onIndexChanged(0);
                   },
                 ),
               ),
@@ -58,13 +59,14 @@ class BottomNavigation extends StatelessWidget {
                   icon: Icons.account_balance_wallet_outlined,
                   label: 'Wallet',
                   onTap: () {
-                    onIndexChanged(1);
                     if (selectedIndex != 1) {
-                      Navigator.pushReplacement(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (context) => const WalletScreen()),
+                        (route) => false,
                       );
                     }
+                    onIndexChanged(1);
                   },
                 ),
               ),
@@ -75,13 +77,14 @@ class BottomNavigation extends StatelessWidget {
                   icon: Icons.person_outline,
                   label: 'Profile',
                   onTap: () {
-                    onIndexChanged(2);
                     if (selectedIndex != 2) {
-                      Navigator.pushReplacement(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                        (route) => false,
                       );
                     }
+                    onIndexChanged(2);
                   },
                 ),
               ),
