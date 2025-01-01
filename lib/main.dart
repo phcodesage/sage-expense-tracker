@@ -152,9 +152,31 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
+  double _balance = 2256.00; // Initial balance
+
   void _addExpense(Expense expense) {
     setState(() {
       _mockExpenses = [expense, ..._mockExpenses];
+      // Subtract the expense amount from balance
+      _balance -= expense.amount;
+    });
+  }
+
+  // Add method to add balance
+  void _addBalance(double amount) {
+    setState(() {
+      _balance += amount;
+      // Add it as an income transaction
+      _mockExpenses = [
+        Expense(
+          name: 'Balance Added',
+          amount: amount,
+          date: DateTime.now(),
+          userId: 'user_id',
+          currency: 'PHP',
+        ),
+        ..._mockExpenses
+      ];
     });
   }
 
@@ -162,6 +184,118 @@ class _HomeScreenState extends State<HomeScreen> {
         0,
         (sum, expense) => sum + expense.amount,
       );
+
+  void _showAddBalanceDialog(BuildContext context) {
+    final TextEditingController amountController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add Balance',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'AMOUNT',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        Currency.PHP.symbol,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: '0.00',
+                          ),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final amount = double.tryParse(amountController.text);
+                      if (amount != null && amount > 0) {
+                        _addBalance(amount);
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Balance',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getExpenseIcon(String expenseName) {
+    final category = ExpenseCategory.values.firstWhere(
+      (cat) => cat.name == expenseName,
+      orElse: () => ExpenseCategory.others,
+    );
+    return category.icon;
+  }
+
+  Color _getExpenseColor(String expenseName) {
+    final category = ExpenseCategory.values.firstWhere(
+      (cat) => cat.name == expenseName,
+      orElse: () => ExpenseCategory.others,
+    );
+    return category.color;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,13 +337,42 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text(
-                      '${Currency.PHP.symbol}${_totalBalance.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${Currency.PHP.symbol}${_balance.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0xFF0097A7),
+                                Color(0xFFFFC67D),
+                              ],
+                            ),
+                          ),
+                          child: FloatingActionButton(
+                            mini: true,
+                            onPressed: () => _showAddBalanceDialog(context),
+                            elevation: 0,
+                            backgroundColor: Colors.transparent,
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     Row(
@@ -250,8 +413,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          expense.amount > 0 ? Icons.arrow_downward : Icons.arrow_upward,
-                          color: expense.amount > 0 ? Colors.green : Colors.red,
+                          _getExpenseIcon(expense.name),
+                          color: _getExpenseColor(expense.name),
                         ),
                       ),
                       title: Text(expense.name),
@@ -810,10 +973,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
 
   void _handleAddExpense() {
     if (_amountController.text.isNotEmpty) {
-      final amount = double.tryParse(_amountController.text) ?? 0.0;
+      final amount = -(double.tryParse(_amountController.text) ?? 0.0); // Make it negative
       final expense = Expense(
         name: _selectedCategory.name,
-        amount: amount,
+        amount: amount, // This will be negative
         date: _selectedDate,
         userId: 'user_id',
         currency: _selectedCurrency.code,
