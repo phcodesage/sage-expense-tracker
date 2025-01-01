@@ -7,6 +7,7 @@ import 'package:sage_expense_tracker/screens/profile_screen.dart';
 import 'package:sage_expense_tracker/screens/onboarding_screen.dart';
 import 'package:sage_expense_tracker/screens/splash_screen.dart';
 import 'package:sage_expense_tracker/widgets/circle_reveal_clipper.dart';
+import 'package:sage_expense_tracker/widgets/searchable_currency_dropdown.dart';
 
 enum Currency {
   AED('AED', 'د.إ'),
@@ -650,31 +651,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
   }
 
   Widget _buildCurrencySelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<Currency>(
-          value: _selectedCurrency,
-          isExpanded: true,
-          items: Currency.values.map((currency) {
-            return DropdownMenuItem(
-              value: currency,
-              child: Text('${currency.code} (${currency.symbol})'),
-            );
-          }).toList(),
-          onChanged: (Currency? value) {
-            if (value != null) {
-              setState(() {
-                _selectedCurrency = value;
-              });
-            }
-          },
-        ),
-      ),
+    return SearchableCurrencyDropdown(
+      value: _selectedCurrency,
+      onChanged: (Currency? value) {
+        if (value != null) {
+          setState(() {
+            _selectedCurrency = value;
+          });
+        }
+      },
     );
   }
 
