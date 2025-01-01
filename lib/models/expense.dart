@@ -5,6 +5,7 @@ class Expense {
   final DateTime date;
   final String? invoiceUrl;
   final String userId;
+  final String currency;
 
   Expense({
     this.id,
@@ -13,6 +14,7 @@ class Expense {
     required this.date,
     this.invoiceUrl,
     required this.userId,
+    required this.currency,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,6 +24,7 @@ class Expense {
       'date': date.toIso8601String(),
       'invoiceUrl': invoiceUrl,
       'userId': userId,
+      'currency': currency,
     };
   }
 
@@ -33,6 +36,7 @@ class Expense {
       date: DateTime.parse(map['date']),
       invoiceUrl: map['invoiceUrl'],
       userId: map['userId'] ?? '',
+      currency: map['currency'] ?? 'PHP',
     );
   }
 } 

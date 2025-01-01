@@ -8,6 +8,58 @@ import 'package:sage_expense_tracker/screens/onboarding_screen.dart';
 import 'package:sage_expense_tracker/screens/splash_screen.dart';
 import 'package:sage_expense_tracker/widgets/circle_reveal_clipper.dart';
 
+enum Currency {
+  AED('AED', 'د.إ'),
+  AUD('AUD', 'A\$'),
+  BGN('BGN', 'лв'),
+  BRL('BRL', 'R\$'),
+  CAD('CAD', 'C\$'),
+  CHF('CHF', 'CHF'),
+  CNY('CNY', '¥'),
+  CZK('CZK', 'Kč'),
+  DKK('DKK', 'kr'),
+  EUR('EUR', '€'),
+  GBP('GBP', '£'),
+  HKD('HKD', 'HK\$'),
+  HRK('HRK', 'kn'),
+  HUF('HUF', 'Ft'),
+  IDR('IDR', 'Rp'),
+  ILS('ILS', '₪'),
+  INR('INR', '₹'),
+  ISK('ISK', 'kr'),
+  JPY('JPY', '¥'),
+  KRW('KRW', '₩'),
+  MXN('MXN', 'Mex\$'),
+  MYR('MYR', 'RM'),
+  NOK('NOK', 'kr'),
+  NZD('NZD', 'NZ\$'),
+  PHP('PHP', '₱'),
+  PLN('PLN', 'zł'),
+  RON('RON', 'lei'),
+  RUB('RUB', '₽'),
+  SEK('SEK', 'kr'),
+  SGD('SGD', 'S\$'),
+  THB('THB', '฿'),
+  TRY('TRY', '₺'),
+  USD('USD', '\$'),
+  ZAR('ZAR', 'R');
+
+  final String code;
+  final String symbol;
+  const Currency(this.code, this.symbol);
+
+  static Currency fromCode(String code) {
+    return Currency.values.firstWhere(
+      (currency) => currency.code == code,
+      orElse: () => Currency.PHP, // Default to PHP if code not found
+    );
+  }
+
+  static String getSymbol(String code) {
+    return fromCode(code).symbol;
+  }
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -47,24 +99,28 @@ class _HomeScreenState extends State<HomeScreen> {
       amount: 850.00,
       date: DateTime.now(),
       userId: 'user_id',
+      currency: 'PHP',
     ),
     Expense(
       name: 'Transfer',
       amount: -85.00,
       date: DateTime.now().subtract(const Duration(days: 1)),
       userId: 'user_id',
+      currency: 'PHP',
     ),
     Expense(
       name: 'Paypal',
       amount: 1406.00,
       date: DateTime(2022, 1, 30),
       userId: 'user_id',
+      currency: 'PHP',
     ),
     Expense(
       name: 'Youtube',
       amount: -11.99,
       date: DateTime(2022, 1, 16),
       userId: 'user_id',
+      currency: 'PHP',
     ),
   ];
 
@@ -114,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      '\$${_totalBalance.toStringAsFixed(2)}',
+                      '${Currency.PHP.symbol}${_totalBalance.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 40,
@@ -128,12 +184,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         _buildBalanceItem(
                           icon: Icons.arrow_downward,
                           label: 'Income',
-                          amount: '\$2,256.00',
+                          amount: '${Currency.PHP.symbol}2,256.00',
                         ),
                         _buildBalanceItem(
                           icon: Icons.arrow_upward,
                           label: 'Expenses',
-                          amount: '\$96.99',
+                          amount: '${Currency.PHP.symbol}96.99',
                         ),
                       ],
                     ),
@@ -167,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: Text(expense.name),
                       subtitle: Text(DateFormat('MMM dd, yyyy').format(expense.date)),
                       trailing: Text(
-                        '${expense.amount > 0 ? '+' : ''}\$${expense.amount.abs().toStringAsFixed(2)}',
+                        '${expense.amount > 0 ? '+' : ''}${Currency.getSymbol(expense.currency)}${expense.amount.abs().toStringAsFixed(2)}',
                         style: TextStyle(
                           color: expense.amount > 0 ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,
@@ -425,6 +481,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Youtube';
+  Currency _selectedCurrency = Currency.PHP;
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -506,6 +563,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
                         _buildCategorySelector(),
                         const SizedBox(height: 20),
                         const Text(
+                          'CURRENCY',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildCurrencySelector(),
+                        const SizedBox(height: 20),
+                        const Text(
                           'AMOUNT',
                           style: TextStyle(
                             fontSize: 12,
@@ -537,6 +605,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
                         ),
                         const SizedBox(height: 8),
                         _buildAddInvoice(),
+                        const SizedBox(height: 32),
+                        _buildAddButton(),
                       ],
                     ),
                   ),
@@ -579,6 +649,35 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
     );
   }
 
+  Widget _buildCurrencySelector() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Currency>(
+          value: _selectedCurrency,
+          isExpanded: true,
+          items: Currency.values.map((currency) {
+            return DropdownMenuItem(
+              value: currency,
+              child: Text('${currency.code} (${currency.symbol})'),
+            );
+          }).toList(),
+          onChanged: (Currency? value) {
+            if (value != null) {
+              setState(() {
+                _selectedCurrency = value;
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildAmountField() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -588,14 +687,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
       ),
       child: Row(
         children: [
+          Text(
+            _selectedCurrency.symbol,
+            style: const TextStyle(fontSize: 18),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: TextFormField(
               controller: _amountController,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 border: InputBorder.none,
-                hintText: '\$0.00',
-                prefixText: '\$',
+                hintText: '0.00',
               ),
               style: const TextStyle(fontSize: 18),
             ),
@@ -673,9 +776,41 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
     );
   }
 
+  Widget _buildAddButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _handleAddExpense,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'Add Expense',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _handleAddExpense() {
     if (_amountController.text.isNotEmpty) {
-      // TODO: Implement expense addition with MongoDB later
+      final amount = double.tryParse(_amountController.text) ?? 0.0;
+      final expense = Expense(
+        name: _selectedCategory,
+        amount: amount,
+        date: _selectedDate,
+        userId: 'user_id', // Replace with actual user ID
+        currency: _selectedCurrency.code,
+      );
+      // TODO: Add the expense to your database
       Navigator.pop(context);
     }
   }
