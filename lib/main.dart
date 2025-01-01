@@ -61,6 +61,33 @@ enum Currency {
   }
 }
 
+enum ExpenseCategory {
+  food('Food', Icons.restaurant, Colors.orange),
+  transport('Transport', Icons.directions_bus, Colors.blue),
+  utilities('Utilities', Icons.bolt, Colors.yellow),
+  internet('Internet', Icons.wifi, Colors.green),
+  water('Water', Icons.water_drop, Colors.lightBlue),
+  electricity('Electricity', Icons.lightbulb, Colors.amber),
+  entertainment('Entertainment', Icons.movie, Colors.purple),
+  netflix('Netflix', Icons.play_circle_filled, Colors.red),
+  youtube('YouTube', Icons.play_arrow, Colors.red),
+  spotify('Spotify', Icons.music_note, Colors.green),
+  subscriptions('Subscriptions', Icons.subscriptions, Colors.indigo),
+  chatGPT('ChatGPT', Icons.psychology, Colors.teal),
+  claude('Claude', Icons.smart_toy, Colors.deepPurple),
+  cursor('Cursor', Icons.code, Colors.blueGrey),
+  shopping('Shopping', Icons.shopping_bag, Colors.pink),
+  health('Health', Icons.favorite, Colors.red),
+  education('Education', Icons.school, Colors.brown),
+  rent('Rent', Icons.home, Colors.deepOrange),
+  others('Others', Icons.more_horiz, Colors.grey);
+
+  final String name;
+  final IconData icon;
+  final Color color;
+  const ExpenseCategory(this.name, this.icon, this.color);
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -94,7 +121,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  final List<Expense> _mockExpenses = [
+  List<Expense> _mockExpenses = [
     Expense(
       name: 'Upwork',
       amount: 850.00,
@@ -124,6 +151,12 @@ class _HomeScreenState extends State<HomeScreen> {
       currency: 'PHP',
     ),
   ];
+
+  void _addExpense(Expense expense) {
+    setState(() {
+      _mockExpenses = [expense, ..._mockExpenses];
+    });
+  }
 
   double get _totalBalance => _mockExpenses.fold(
         0,
@@ -267,7 +300,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      child: AddExpenseScreen(),
+                      child: AddExpenseScreen(
+                        onExpenseAdded: _addExpense,
+                      ),
                     ),
                   );
                 },
@@ -472,7 +507,12 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  final Function(Expense)? onExpenseAdded;
+
+  const AddExpenseScreen({
+    super.key,
+    this.onExpenseAdded,
+  });
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -481,7 +521,7 @@ class AddExpenseScreen extends StatefulWidget {
 class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  String _selectedCategory = 'Youtube';
+  ExpenseCategory _selectedCategory = ExpenseCategory.food;
   Currency _selectedCurrency = Currency.PHP;
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -595,17 +635,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
                         ),
                         const SizedBox(height: 8),
                         _buildDatePicker(),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'INVOICE',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildAddInvoice(),
                         const SizedBox(height: 32),
                         _buildAddButton(),
                       ],
@@ -627,25 +656,45 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            _selectedCategory,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const Spacer(),
-          const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-        ],
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<ExpenseCategory>(
+          value: _selectedCategory,
+          isExpanded: true,
+          items: ExpenseCategory.values.map((category) {
+            return DropdownMenuItem(
+              value: category,
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: category.color.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      category.icon,
+                      color: category.color,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    category.name,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (ExpenseCategory? value) {
+            if (value != null) {
+              setState(() {
+                _selectedCategory = value;
+              });
+            }
+          },
+        ),
       ),
     );
   }
@@ -735,32 +784,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildAddInvoice() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.add, color: Colors.grey),
-          SizedBox(width: 8),
-          Text(
-            'Add Invoice',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildAddButton() {
     return SizedBox(
       width: double.infinity,
@@ -789,13 +812,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
     if (_amountController.text.isNotEmpty) {
       final amount = double.tryParse(_amountController.text) ?? 0.0;
       final expense = Expense(
-        name: _selectedCategory,
+        name: _selectedCategory.name,
         amount: amount,
         date: _selectedDate,
-        userId: 'user_id', // Replace with actual user ID
+        userId: 'user_id',
         currency: _selectedCurrency.code,
       );
-      // TODO: Add the expense to your database
+      
+      if (widget.onExpenseAdded != null) {
+        widget.onExpenseAdded!(expense);
+      }
       Navigator.pop(context);
     }
   }

@@ -154,7 +154,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      child: const AddExpenseScreen(),
+                      child: AddExpenseScreen(
+                        onExpenseAdded: (expense) {
+                          // Handle the new expense if needed in profile screen
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
                   );
                 },

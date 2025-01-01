@@ -190,7 +190,12 @@ class _WalletScreenState extends State<WalletScreen> {
                           ],
                         ),
                       ),
-                      child: const AddExpenseScreen(),
+                      child: AddExpenseScreen(
+                        onExpenseAdded: (expense) {
+                          // Handle the new expense if needed in wallet screen
+                          Navigator.pop(context);
+                        },
+                      ),
                     ),
                   );
                 },
