@@ -59,32 +59,41 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '\$2,548.00',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 30),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildActionButton(
-                  icon: Icons.add,
-                  label: 'Add',
-                  onTap: () {},
+                Text(
+                  '\$2,548.00',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                _buildActionButton(
-                  icon: Icons.grid_view,
-                  label: 'Pay',
-                  onTap: () {},
-                ),
-                _buildActionButton(
-                  icon: Icons.send,
-                  label: 'Send',
-                  onTap: () {},
+                const SizedBox(width: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF0097A7),
+                        Color(0xFFFFC67D),
+                      ],
+                    ),
+                  ),
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: () => _showAddBalanceDialog(context),
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -250,6 +259,7 @@ class _WalletScreenState extends State<WalletScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required Color color,
   }) {
     return InkWell(
       onTap: onTap,
@@ -258,16 +268,16 @@ class _WalletScreenState extends State<WalletScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.white),
+            child: Icon(icon, color: color),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: color,
               fontSize: 14,
             ),
           ),
@@ -349,6 +359,102 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAddBalanceDialog(BuildContext context) {
+    final TextEditingController amountController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add Balance',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'AMOUNT',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        Currency.PHP.symbol,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: '0.00',
+                          ),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final amount = double.tryParse(amountController.text);
+                      if (amount != null && amount > 0) {
+                        // TODO: Handle balance addition
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Balance',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 } 

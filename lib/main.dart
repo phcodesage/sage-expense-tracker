@@ -7,7 +7,7 @@ import 'package:sage_expense_tracker/screens/profile_screen.dart';
 import 'package:sage_expense_tracker/screens/onboarding_screen.dart';
 import 'package:sage_expense_tracker/screens/splash_screen.dart';
 import 'package:sage_expense_tracker/widgets/circle_reveal_clipper.dart';
-import 'package:sage_expense_tracker/widgets/searchable_currency_dropdown.dart';
+import 'package:sage_expense_tracker/widgets/bottom_navigation.dart';
 
 enum Currency {
   AED('AED', 'د.إ'),
@@ -123,28 +123,28 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<Expense> _mockExpenses = [
     Expense(
-      name: 'Upwork',
+      name: ExpenseCategory.others.name,
       amount: 850.00,
       date: DateTime.now(),
       userId: 'user_id',
       currency: 'PHP',
     ),
     Expense(
-      name: 'Transfer',
+      name: ExpenseCategory.transport.name,
       amount: -85.00,
       date: DateTime.now().subtract(const Duration(days: 1)),
       userId: 'user_id',
       currency: 'PHP',
     ),
     Expense(
-      name: 'Paypal',
+      name: ExpenseCategory.others.name,
       amount: 1406.00,
       date: DateTime(2022, 1, 30),
       userId: 'user_id',
       currency: 'PHP',
     ),
     Expense(
-      name: 'Youtube',
+      name: ExpenseCategory.youtube.name,
       amount: -11.99,
       date: DateTime(2022, 1, 16),
       userId: 'user_id',
@@ -282,6 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   IconData _getExpenseIcon(String expenseName) {
+    if (expenseName == 'Balance Added') {
+      return Icons.account_balance_wallet;
+    }
     final category = ExpenseCategory.values.firstWhere(
       (cat) => cat.name == expenseName,
       orElse: () => ExpenseCategory.others,
@@ -290,6 +293,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Color _getExpenseColor(String expenseName) {
+    if (expenseName == 'Balance Added') {
+      return Colors.green;
+    }
     final category = ExpenseCategory.values.firstWhere(
       (cat) => cat.name == expenseName,
       orElse: () => ExpenseCategory.others,
@@ -346,30 +352,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.white,
                             fontSize: 40,
                             fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0xFF0097A7),
-                                Color(0xFFFFC67D),
-                              ],
-                            ),
-                          ),
-                          child: FloatingActionButton(
-                            mini: true,
-                            onPressed: () => _showAddBalanceDialog(context),
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ),
                           ),
                         ),
                       ],
@@ -434,196 +416,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0097A7),
-              Color(0xFFFFC67D),
-            ],
-          ),
-        ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) {
-                  return Material(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
-                        ),
-                      ),
-                      child: AddExpenseScreen(
-                        onExpenseAdded: _addExpense,
-                      ),
-                    ),
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 300),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  final screenSize = MediaQuery.of(context).size;
-                  final fabPosition = MediaQuery.of(context).size.height - 80;
-                  
-                  return Stack(
-                    children: [
-                      child,
-                      AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, child) {
-                          return ClipPath(
-                            clipper: CircleRevealClipper(
-                              center: Offset(
-                                screenSize.width / 2,
-                                fabPosition,
-                              ),
-                              radius: animation.value * screenSize.height * 1.5,
-                            ),
-                            child: child,
-                          );
-                        },
-                        child: child,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            );
-          },
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 32,
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(30),
-            bottomRight: Radius.circular(30),
-          ),
-        ),
-        child: BottomAppBar(
-          elevation: 0,
-          color: Colors.transparent,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 8,
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              children: [
-                const SizedBox(width: 24),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedIndex = 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.home_outlined,
-                          color: _selectedIndex == 0 
-                              ? Theme.of(context).colorScheme.primary 
-                              : Colors.grey,
-                        ),
-                        Text(
-                          'Home',
-                          style: TextStyle(
-                            color: _selectedIndex == 0 
-                                ? Theme.of(context).colorScheme.primary 
-                                : Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const Spacer(flex: 2),
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() => _selectedIndex = 1);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const WalletScreen(),
-                        ),
-                      ).then((_) => setState(() => _selectedIndex = 0));
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.account_balance_wallet_outlined,
-                          color: _selectedIndex == 1 
-                              ? Theme.of(context).colorScheme.primary 
-                              : Colors.grey,
-                        ),
-                        Text(
-                          'Wallet',
-                          style: TextStyle(
-                            color: _selectedIndex == 1 
-                                ? Theme.of(context).colorScheme.primary 
-                                : Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () {
-                      setState(() => _selectedIndex = 2);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfileScreen(),
-                        ),
-                      ).then((_) => setState(() => _selectedIndex = 0));
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          color: _selectedIndex == 2 
-                              ? Theme.of(context).colorScheme.primary 
-                              : Colors.grey,
-                        ),
-                        Text(
-                          'Profile',
-                          style: TextStyle(
-                            color: _selectedIndex == 2 
-                                ? Theme.of(context).colorScheme.primary 
-                                : Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: BottomNavigation(
+        selectedIndex: _selectedIndex,
+        onIndexChanged: (index) => setState(() => _selectedIndex = index),
       ),
     );
   }
@@ -863,15 +658,49 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> with SingleTickerPr
   }
 
   Widget _buildCurrencySelector() {
-    return SearchableCurrencyDropdown(
-      value: _selectedCurrency,
-      onChanged: (Currency? value) {
-        if (value != null) {
-          setState(() {
-            _selectedCurrency = value;
-          });
-        }
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Currency>(
+          value: _selectedCurrency,
+          isExpanded: true,
+          items: Currency.values.map((currency) {
+            return DropdownMenuItem(
+              value: currency,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      currency.symbol,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    currency.code,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (Currency? value) {
+            if (value != null) {
+              setState(() {
+                _selectedCurrency = value;
+              });
+            }
+          },
+        ),
+      ),
     );
   }
 
